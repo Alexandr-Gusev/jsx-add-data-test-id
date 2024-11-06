@@ -1,6 +1,6 @@
 {
 	"name": "jsx-add-data-test-id",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Add data-testid attribute to your JSX elements.",
 	"homepage": "https://github.com/Alexandr-Gusev/jsx-add-test-id",
 	"bin": "index.js",
