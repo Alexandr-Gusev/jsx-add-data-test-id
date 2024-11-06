@@ -1,0 +1,22 @@
+{
+	"name": "jsx-add-data-test-id",
+	"version": "1.0.0",
+	"description": "Add data-testid attribute to your JSX elements.",
+	"homepage": "https://github.com/Alexandr-Gusev/jsx-add-data-test-id",
+	"bin": "index.js",
+	"keywords": [
+		"add",
+		"test",
+		"id",
+		"attribute",
+		"jsx"
+	],
+	"author": "Alexandr Gusev <alphacity@yandex.ru>",
+	"license": "MIT",
+	"dependencies": {
+		"@babel/parser": "7.17.3",
+		"@babel/traverse": "7.17.3",
+		"commander": "9.0.0",
+		"uuid": "8.3.2"
+	}
+}
