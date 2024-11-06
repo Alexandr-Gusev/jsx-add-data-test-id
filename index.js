@@ -19,7 +19,7 @@ commander
 	.option("--cache <value>", undefined, ".add-testid-cache.json")
 	.parse();
 const opts = commander.opts();
-opts.excludeDirs = new Set(opts.excludeDirs || []);
+opts.excludeDirs = new Set((opts.excludeDirs || []).map(dir => dir.replace(/\\/g, "/")));
 opts.ext = `.${opts.ext}`;
 opts.indentation = opts.indentation === "tab" ? "\t" : " ".repeat(opts.indentation);
 opts.quotes = opts.quotes === "double" ? "\"" : "'";
@@ -190,7 +190,7 @@ const collectJobCounter = new JobCounter(() => {
 });
 
 const collectChangedFiles = dir => {
-	if (opts.excludeDirs.has(dir)) {
+	if (opts.excludeDirs.has(dir.replace(/\\/g, "/"))) {
 		return;
 	}
 	collectJobCounter.inc();
