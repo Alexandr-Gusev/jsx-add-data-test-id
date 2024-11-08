@@ -16,7 +16,8 @@ commander
 	.option("--ext <value>", undefined, "js")
 	.option("--indentation <value>", undefined, "tab")
 	.option("--quotes <value>", undefined, "double")
-	.option("--cache <value>", undefined, ".add-testid-cache.json")
+	.option("--cache <value>", undefined, ".jsx-add-data-test-id-cache.json")
+	.option("--allow-duplicates")
 	.parse();
 const opts = commander.opts();
 opts.excludeDirs = new Set((opts.excludeDirs || []).map(dir => dir.replace(/\\/g, "/")));
@@ -27,12 +28,16 @@ opts.quotes = opts.quotes === "double" ? "\"" : "'";
 let originalCache = {};
 try {
 	originalCache = JSON.parse(fs.readFileSync(opts.cache, {encoding: "utf8"}));
+	for (const fn of Object.keys(originalCache)) {
+		originalCache[fn].ids = new Set(originalCache[fn].ids);
+	}
 } catch (err) {
 	// ignore
 }
 const cache = {};
 
 const ids = new Set();
+const duplicates = new Set();
 
 const getId = () => {
 	let id = uuid4();
@@ -73,6 +78,7 @@ const transform = (fn, data, callback) => {
 	const cacheForFile = cache[fn];
 
 	const ast = parse(data, {
+		sourceFilename: fn,
 		sourceType: "module",
 		plugins: [
 			["jsx"]
@@ -88,13 +94,13 @@ const transform = (fn, data, callback) => {
 			if (attribute) {
 				const value = attribute.value && attribute.value.value;
 				if (ids.has(value)) {
-					console.error(`more than one occurrence of ${value} was found`);
-					process.exit(1);
-				} else if (value === "") {
+					duplicates.add(value);
+				}
+				if (value === "") {
 					positions.push(attribute.value);
 				} else {
 					ids.add(value);
-					cacheForFile.ids.push(value);
+					cacheForFile.ids.add(value);
 				}
 			} else {
 				positions.push(p.node);
@@ -106,7 +112,7 @@ const transform = (fn, data, callback) => {
 	let prevEnd = 0;
 	for (const {start, end} of positions.sort((a, b) => a.end - b.end)) {
 		const id = getId();
-		cacheForFile.ids.push(id);
+		cacheForFile.ids.add(id);
 		insertId(newData, data, start, end, prevEnd, id);
 		prevEnd = end;
 	}
@@ -155,6 +161,13 @@ class JobCounter {
 }
 
 const transformJobCounter = new JobCounter(() => {
+	if (duplicates.size && !opts.allowDuplicates) {
+		console.error(`duplicates: ${[...duplicates].join(", ")}`);
+		process.exit(1);
+	}
+	for (const fn of Object.keys(cache)) {
+		cache[fn].ids = [...cache[fn].ids];
+	}
 	fs.writeFileSync(opts.cache, JSON.stringify(cache), {encoding: "utf8"});
 	const stopTs = new Date().getTime();
 	console.log(`changed files: ${changedFiles.length}, processing time: ${stopTs - startTs} ms`);
@@ -214,7 +227,7 @@ const collectChangedFiles = dir => {
 					const t = stats.mtime.getTime();
 					if (!info || info.mt !== t) {
 						info = {
-							ids: []
+							ids: new Set()
 						};
 						changedFiles.push(fn);
 					} else {
