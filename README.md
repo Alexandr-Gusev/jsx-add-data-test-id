@@ -1,6 +1,32 @@
 # Add data-testid attribute to your JSX elements
 
-And that's all.
+Your JSX after processing
+```js
+import React, {Fragment} from "react";
+
+const X = ({x, children}) => <div data-testid="ce00611a-d83d-4041-bc30-57dd49cf2b25">Hello {x} and {children}</div>;
+
+export const A = ({a}) => {
+	return (
+		<Fragment data-testid="280b21dd-8ca9-4a36-904a-c8b35cf5c89e">
+			<X x="x" data-testid="5de44139-6e0d-40e1-8ad3-d05f0cc08808" />
+			<X x="x" data-testid="0b092c80-b0fb-4141-bfc4-fbe3742cf68b">Hello</X>
+			<X
+				x="x"
+				wow={<div data-testid="26a8a002-e426-4367-9e00-4903f480a8a7">wow</div>}
+				data-testid="79d88340-5430-4cd2-9579-e656e42c9dc5"
+			/>
+			<X
+				x="x"
+				wow={() => <div data-testid="d8d4b639-9d10-49b8-bfd1-b817931e5918">wow</div>}
+				data-testid="7fbb52b6-db63-4cf3-b5c9-0574e0e516f2"
+			>
+				Hello
+			</X>
+		</Fragment>
+	);
+};
+```
 
 ## Installation
 
