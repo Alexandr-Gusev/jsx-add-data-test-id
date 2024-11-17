@@ -12,9 +12,9 @@ const {customAlphabet} = require("nanoid");
 
 commander
 	.option("-i, --include-dirs <value...>")
-	.option("-e, --exclude-dirs <value...>")
+	.option("-e, --exclude-dirs <value...>", undefined, [])
 	.option("-n, --id-name <value>", undefined, "data-testid")
-	.option("--ext <value>", undefined, "js")
+	.option("--extensions <value...>", undefined, ["js"])
 	.option("--indentation <value>", undefined, "tab")
 	.option("--quotes <value>", undefined, "double")
 	.option("--cache <value>", undefined, ".jsx-add-data-test-id-cache.json")
@@ -24,8 +24,8 @@ commander
 	.option("--id-generator <value>", undefined, "nanoid")
 	.parse();
 const opts = commander.opts();
-opts.excludeDirs = new Set((opts.excludeDirs || []).map(dir => dir.replace(/\\/g, "/")));
-opts.ext = `.${opts.ext}`;
+opts.excludeDirs = new Set(opts.excludeDirs.map(dir => dir.replace(/\\/g, "/")));
+opts.extensions = new Set(opts.extensions.map(e => `.${e}`));
 opts.indentation = opts.indentation === "tab" ? "\t" : " ".repeat(opts.indentation);
 opts.quotes = opts.quotes === "double" ? "\"" : "'";
 
@@ -44,7 +44,7 @@ const ids = new Set();
 const duplicates = new Set();
 
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 8);
-const idGenerator = opts.idGenerator === "uuid4" ? uuid4 : nanoid;
+const idGenerator = opts.idGenerator === "nanoid" ? nanoid : uuid4;
 
 let newIdsCount = 0;
 
@@ -142,17 +142,17 @@ const transform = (fn, data, callback) => {
 
 	fs.writeFile(`${fn}.tmp`, newData.join(""), {encoding: "utf8"}, err => {
 		if (err) {
-			console.error(`can not write ${fn}.tmp`);
+			console.error(`ERROR: can not write ${fn}.tmp`);
 			process.exit(1);
 		}
 		fs.unlink(fn, err => {
 			if (err) {
-				console.error(`can not unlink ${fn}`);
+				console.error(`ERROR: can not unlink ${fn}`);
 				process.exit(1);
 			}
 			fs.rename(`${fn}.tmp`, fn, err => {
 				if (err) {
-					console.error(`can not rename ${fn}.tmp to ${fn}`);
+					console.error(`ERROR: can not rename ${fn}.tmp to ${fn}`);
 					process.exit(1);
 				}
 				modificatedFilesCount++;
@@ -198,6 +198,9 @@ const transformJobCounter = new JobCounter(() => {
 	console.log(`IDs total: ${ids.size}`);
 	console.log(`Duplicates: ${[...duplicates].join(", ")}`);
 	console.log(`Processing time: ${stopTs - startTs} ms`);
+	if (err) {
+		console.error("ERROR: duplicates are not allowed");
+	}
 	process.exit(err ? 1 : 0);
 });
 
@@ -212,13 +215,13 @@ const collectJobCounter = new JobCounter(() => {
 		transformJobCounter.inc();
 		fs.readFile(fn, {encoding: "utf8"}, (err, data) => {
 			if (err) {
-				console.error(`can not read ${fn}`);
+				console.error(`ERROR: can not read ${fn}`);
 				process.exit(1);
 			}
 			transform(fn, data, () => {
 				fs.stat(fn, (err, stats) => {
 					if (err) {
-						console.error(`can not get stat for ${fn}`);
+						console.error(`ERROR: can not get stat for ${fn}`);
 						process.exit(1);
 					}
 					cache[fn].mt = stats.mtime.getTime();
@@ -237,7 +240,7 @@ const collectChangedFiles = dir => {
 	collectJobCounter.inc();
 	fs.readdir(dir, {encoding: "utf8"}, (err, files) => {
 		if (err) {
-			console.error(`can not read dir ${dir}`);
+			console.error(`ERROR: can not read dir ${dir}`);
 			process.exit(1);
 		}
 		for (const file of files) {
@@ -245,12 +248,12 @@ const collectChangedFiles = dir => {
 			collectJobCounter.inc();
 			fs.stat(fn, (err, stats) => {
 				if (err) {
-					console.error(`can not get stat for ${fn}`);
+					console.error(`ERROR: can not get stat for ${fn}`);
 					process.exit(1);
 				}
 				if (stats.isDirectory()) {
 					collectChangedFiles(fn);
-				} else if (fn.endsWith(opts.ext)) {
+				} else if (opts.extensions.has(path.extname(fn))) {
 					let info = originalCache[fn];
 					const t = stats.mtime.getTime();
 					if (!info || info.mt !== t) {

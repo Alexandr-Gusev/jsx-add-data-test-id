@@ -77,14 +77,18 @@ npm i -D jsx-add-data-test-id
 ## Usage
 
 ```bash
-npx jsx-add-data-test-id --include-dirs src/js --exclude-dirs src/js/icons --id-name data-testid --ext js --indentation tab --quotes double --cache .jsx-add-data-test-id-cache.json
+npx jsx-add-data-test-id --include-dirs src/js --exclude-dirs src/js/icons --id-name data-testid
 ```
 
 Additional options:
+* extensions - js
+* indentation - tab or number of spaces, default - tab
+* quotes - double or single, default - double
+* cache - .jsx-add-data-test-id-cache.json
 * allow-duplicates - allow duplicate attribute values
 * disable-modification - prohibit file modification
 * disable-insertion - prohibit attribute insertion (only empty attributes will be updated)
-* id-generator - uuid4 or nanoid (default)
+* id-generator - nanoid or uuid4, default - nanoid
 
 Pipeline:
 * user writes code
