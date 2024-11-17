@@ -28,6 +28,46 @@ export const A = ({a}) => {
 };
 ```
 
+You can hide attribute values using [Inline Fold](https://marketplace.visualstudio.com/items?itemName=moalamri.inline-fold) extension for Visual Studio Code with a configuration like this
+```json
+{
+	"inlineFold.regex": "(data-testid=\"[a-z0-9-]*\")",
+	"inlineFold.regexFlags": "g",
+	"inlineFold.regexGroup": 1,
+	"inlineFold.maskChar": "data-testid",
+	"inlineFold.maskColor": "#A0A0A0",
+	"inlineFold.unfoldOnLineSelect": false
+}
+```
+
+Your JSX in Visual Studio Code editor after hiding
+```js
+import React, {Fragment} from "react";
+
+const X = ({x, children}) => <div data-testid>Hello {x} and {children}</div>;
+
+export const A = ({a}) => {
+	return (
+		<Fragment data-testid>
+			<X x="x" data-testid />
+			<X x="x" data-testid>Hello</X>
+			<X
+				x="x"
+				wow={<div data-testid>wow</div>}
+				data-testid
+			/>
+			<X
+				x="x"
+				wow={() => <div data-testid>wow</div>}
+				data-testid
+			>
+				Hello
+			</X>
+		</Fragment>
+	);
+};
+```
+
 ## Installation
 
 ```bash
@@ -39,3 +79,15 @@ npm i -D jsx-add-data-test-id
 ```bash
 npx jsx-add-data-test-id --include-dirs src/js --exclude-dirs src/js/icons --id-name data-testid --ext js --indentation tab --quotes double --cache .jsx-add-data-test-id-cache.json
 ```
+
+Additional options:
+* allow-duplicates - allow duplicate attribute values
+* disable-modification - prohibit file modification
+* disable-insertion - prohibit attribute insertion (only empty attributes will be updated)
+
+Pipeline:
+* user writes code
+* user executes jsx-add-data-test-id with disable-modification option
+* user performs duplicate cleanup if required
+* user makes commit
+* CI tool executes jsx-add-data-test-id without disable-modification option and makes commit

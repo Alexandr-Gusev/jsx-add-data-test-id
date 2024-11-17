@@ -18,6 +18,8 @@ commander
 	.option("--quotes <value>", undefined, "double")
 	.option("--cache <value>", undefined, ".jsx-add-data-test-id-cache.json")
 	.option("--allow-duplicates")
+	.option("--disable-modification")
+	.option("--disable-insertion")
 	.parse();
 const opts = commander.opts();
 opts.excludeDirs = new Set((opts.excludeDirs || []).map(dir => dir.replace(/\\/g, "/")));
@@ -39,12 +41,15 @@ const cache = {};
 const ids = new Set();
 const duplicates = new Set();
 
+let newIdsCount = 0;
+
 const getId = () => {
 	let id = uuid4();
 	while (ids.has(id)) {
 		id = uuid4();
 	}
 	ids.add(id);
+	newIdsCount++;
 	return id;
 };
 
@@ -74,6 +79,8 @@ const insertId = (newData, data, start, end, prevEnd, id) => {
 	newData.push(`${prefix}${opts.idName}=${opts.quotes}${id}${opts.quotes}${suffix}`);
 };
 
+let modificatedFilesCount = 0;
+
 const transform = (fn, data, callback) => {
 	const cacheForFile = cache[fn];
 
@@ -102,11 +109,16 @@ const transform = (fn, data, callback) => {
 					ids.add(value);
 					cacheForFile.ids.add(value);
 				}
-			} else {
+			} else if (!opts.disableInsertion) {
 				positions.push(p.node);
 			}
 		}
 	});
+
+	if (!positions.length) {
+		callback();
+		return;
+	}
 
 	const newData = [];
 	let prevEnd = 0;
@@ -117,6 +129,11 @@ const transform = (fn, data, callback) => {
 		prevEnd = end;
 	}
 	newData.push(data.substring(prevEnd));
+
+	if (opts.disableModification) {
+		callback();
+		return;
+	}
 
 	fs.writeFile(`${fn}.tmp`, newData.join(""), {encoding: "utf8"}, err => {
 		if (err) {
@@ -133,6 +150,7 @@ const transform = (fn, data, callback) => {
 					console.error(`can not rename ${fn}.tmp to ${fn}`);
 					process.exit(1);
 				}
+				modificatedFilesCount++;
 				callback();
 			});
 		});
@@ -161,16 +179,21 @@ class JobCounter {
 }
 
 const transformJobCounter = new JobCounter(() => {
-	if (duplicates.size && !opts.allowDuplicates) {
-		console.error(`duplicates: ${[...duplicates].join(", ")}`);
-		process.exit(1);
+	const err = duplicates.size && !opts.allowDuplicates;
+	if (!err && !opts.disableModification) {
+		for (const fn of Object.keys(cache)) {
+			cache[fn].ids = [...cache[fn].ids];
+		}
+		fs.writeFileSync(opts.cache, JSON.stringify(cache), {encoding: "utf8"});
 	}
-	for (const fn of Object.keys(cache)) {
-		cache[fn].ids = [...cache[fn].ids];
-	}
-	fs.writeFileSync(opts.cache, JSON.stringify(cache), {encoding: "utf8"});
 	const stopTs = new Date().getTime();
-	console.log(`changed files: ${changedFiles.length}, processing time: ${stopTs - startTs} ms`);
+	console.log(`Files processed: ${changedFiles.length}`);
+	console.log(`Files modificated: ${modificatedFilesCount}`);
+	console.log(`IDs new: ${newIdsCount}`);
+	console.log(`IDs total: ${ids.size}`);
+	console.log(`Duplicates: ${[...duplicates].join(", ")}`);
+	console.log(`Processing time: ${stopTs - startTs} ms`);
+	process.exit(err ? 1 : 0);
 });
 
 const collectJobCounter = new JobCounter(() => {
