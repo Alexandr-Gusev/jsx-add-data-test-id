@@ -7,36 +7,36 @@ import React, {Fragment} from "react";
 const X = ({x, children}) => <div data-testid="iFg6lbU1">Hello {x} and {children}</div>;
 
 export const A = ({a}) => {
-	return (
-		<Fragment data-testid="S77PPbTM">
-			<X x="x" data-testid="wpKMLXrM" />
-			<X x="x" data-testid="kQXys89s">z</X>
-			<X
-				x="x"
-				wow={<div data-testid="gQdhqdQZ">wow</div>}
-				data-testid="evg2cFxK"
-			/>
-			<X
-				x="x"
-				wow={() => <div data-testid="jx8IjU65">wow</div>}
-				data-testid="7P78ztIK"
-			>
-				z
-			</X>
-		</Fragment>
-	);
+    return (
+        <Fragment data-testid="S77PPbTM">
+            <X x="x" data-testid="wpKMLXrM" />
+            <X x="x" data-testid="kQXys89s">z</X>
+            <X
+                x="x"
+                wow={<div data-testid="gQdhqdQZ">wow</div>}
+                data-testid="evg2cFxK"
+            />
+            <X
+                x="x"
+                wow={() => <div data-testid="jx8IjU65">wow</div>}
+                data-testid="7P78ztIK"
+            >
+                z
+            </X>
+        </Fragment>
+    );
 };
 ```
 
 You can hide attribute values using [Inline Fold](https://marketplace.visualstudio.com/items?itemName=moalamri.inline-fold) extension for Visual Studio Code with a configuration like this
 ```json
 {
-	"inlineFold.regex": "(data-testid=\"[0-9A-Za-z]*\")",
-	"inlineFold.regexFlags": "g",
-	"inlineFold.regexGroup": 1,
-	"inlineFold.maskChar": "data-testid",
-	"inlineFold.maskColor": "#A0A0A0",
-	"inlineFold.unfoldOnLineSelect": false
+    "inlineFold.regex": "(data-testid=\"[0-9A-Za-z]*\")",
+    "inlineFold.regexFlags": "g",
+    "inlineFold.regexGroup": 1,
+    "inlineFold.maskChar": "data-testid",
+    "inlineFold.maskColor": "#A0A0A0",
+    "inlineFold.unfoldOnLineSelect": false
 }
 ```
 
@@ -47,24 +47,24 @@ import React, {Fragment} from "react";
 const X = ({x, children}) => <div data-testid>Hello {x} and {children}</div>;
 
 export const A = ({a}) => {
-	return (
-		<Fragment data-testid>
-			<X x="x" data-testid />
-			<X x="x" data-testid>z</X>
-			<X
-				x="x"
-				wow={<div data-testid>wow</div>}
-				data-testid
-			/>
-			<X
-				x="x"
-				wow={() => <div data-testid>wow</div>}
-				data-testid
-			>
-				z
-			</X>
-		</Fragment>
-	);
+    return (
+        <Fragment data-testid>
+            <X x="x" data-testid />
+            <X x="x" data-testid>z</X>
+            <X
+                x="x"
+                wow={<div data-testid>wow</div>}
+                data-testid
+            />
+            <X
+                x="x"
+                wow={() => <div data-testid>wow</div>}
+                data-testid
+            >
+                z
+            </X>
+        </Fragment>
+    );
 };
 ```
 
