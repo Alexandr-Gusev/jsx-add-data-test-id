@@ -8,6 +8,7 @@ const {v4: uuid4} = require("uuid");
 const {parse} = require("@babel/parser");
 const {default: traverse} = require("@babel/traverse");
 const path = require("path");
+const {customAlphabet} = require("nanoid");
 
 commander
 	.option("-i, --include-dirs <value...>")
@@ -20,6 +21,7 @@ commander
 	.option("--allow-duplicates")
 	.option("--disable-modification")
 	.option("--disable-insertion")
+	.option("--id-generator <value>", undefined, "nanoid")
 	.parse();
 const opts = commander.opts();
 opts.excludeDirs = new Set((opts.excludeDirs || []).map(dir => dir.replace(/\\/g, "/")));
@@ -41,12 +43,15 @@ const cache = {};
 const ids = new Set();
 const duplicates = new Set();
 
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 8);
+const idGenerator = opts.idGenerator === "uuid4" ? uuid4 : nanoid;
+
 let newIdsCount = 0;
 
 const getId = () => {
-	let id = uuid4();
+	let id = idGenerator();
 	while (ids.has(id)) {
-		id = uuid4();
+		id = idGenerator();
 	}
 	ids.add(id);
 	newIdsCount++;

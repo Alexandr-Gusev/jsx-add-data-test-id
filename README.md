@@ -4,24 +4,24 @@ Your JSX after processing
 ```js
 import React, {Fragment} from "react";
 
-const X = ({x, children}) => <div data-testid="ce00611a-d83d-4041-bc30-57dd49cf2b25">Hello {x} and {children}</div>;
+const X = ({x, children}) => <div data-testid="iFg6lbU1">Hello {x} and {children}</div>;
 
 export const A = ({a}) => {
 	return (
-		<Fragment data-testid="280b21dd-8ca9-4a36-904a-c8b35cf5c89e">
-			<X x="x" data-testid="5de44139-6e0d-40e1-8ad3-d05f0cc08808" />
-			<X x="x" data-testid="0b092c80-b0fb-4141-bfc4-fbe3742cf68b">Hello</X>
+		<Fragment data-testid="S77PPbTM">
+			<X x="x" data-testid="wpKMLXrM" />
+			<X x="x" data-testid="kQXys89s">z</X>
 			<X
 				x="x"
-				wow={<div data-testid="26a8a002-e426-4367-9e00-4903f480a8a7">wow</div>}
-				data-testid="79d88340-5430-4cd2-9579-e656e42c9dc5"
+				wow={<div data-testid="gQdhqdQZ">wow</div>}
+				data-testid="evg2cFxK"
 			/>
 			<X
 				x="x"
-				wow={() => <div data-testid="d8d4b639-9d10-49b8-bfd1-b817931e5918">wow</div>}
-				data-testid="7fbb52b6-db63-4cf3-b5c9-0574e0e516f2"
+				wow={() => <div data-testid="jx8IjU65">wow</div>}
+				data-testid="7P78ztIK"
 			>
-				Hello
+				z
 			</X>
 		</Fragment>
 	);
@@ -31,7 +31,7 @@ export const A = ({a}) => {
 You can hide attribute values using [Inline Fold](https://marketplace.visualstudio.com/items?itemName=moalamri.inline-fold) extension for Visual Studio Code with a configuration like this
 ```json
 {
-	"inlineFold.regex": "(data-testid=\"[a-z0-9-]*\")",
+	"inlineFold.regex": "(data-testid=\"[0-9A-Za-z]*\")",
 	"inlineFold.regexFlags": "g",
 	"inlineFold.regexGroup": 1,
 	"inlineFold.maskChar": "data-testid",
@@ -50,7 +50,7 @@ export const A = ({a}) => {
 	return (
 		<Fragment data-testid>
 			<X x="x" data-testid />
-			<X x="x" data-testid>Hello</X>
+			<X x="x" data-testid>z</X>
 			<X
 				x="x"
 				wow={<div data-testid>wow</div>}
@@ -61,7 +61,7 @@ export const A = ({a}) => {
 				wow={() => <div data-testid>wow</div>}
 				data-testid
 			>
-				Hello
+				z
 			</X>
 		</Fragment>
 	);
@@ -84,6 +84,7 @@ Additional options:
 * allow-duplicates - allow duplicate attribute values
 * disable-modification - prohibit file modification
 * disable-insertion - prohibit attribute insertion (only empty attributes will be updated)
+* id-generator - uuid4 or nanoid (default)
 
 Pipeline:
 * user writes code
