@@ -22,21 +22,30 @@ commander
 	.option("--disable-modification")
 	.option("--disable-insertion")
 	.option("--id-generator <value>", undefined, "nanoid")
+	.option("--include-elements <value...>", undefined, [])
+	.option("--exclude-elements <value...>", undefined, ["Fragment"])
+	.option("--expected-attributes <value...>", undefined, [])
+	.option("--disable-cache")
 	.parse();
 const opts = commander.opts();
 opts.excludeDirs = new Set(opts.excludeDirs.map(dir => dir.replace(/\\/g, "/")));
 opts.extensions = new Set(opts.extensions.map(e => `.${e}`));
 opts.indentation = opts.indentation === "tab" ? "\t" : " ".repeat(opts.indentation);
 opts.quotes = opts.quotes === "double" ? "\"" : "'";
+opts.includeElements = new Set(opts.includeElements);
+opts.excludeElements = new Set(opts.excludeElements);
+opts.expectedAttributes = new Set(opts.expectedAttributes);
 
 let originalCache = {};
-try {
-	originalCache = JSON.parse(fs.readFileSync(opts.cache, {encoding: "utf8"}));
-	for (const fn of Object.keys(originalCache)) {
-		originalCache[fn].ids = new Set(originalCache[fn].ids);
+if (!opts.disableCache && fs.existsSync(opts.cache)) {
+	try {
+		originalCache = JSON.parse(fs.readFileSync(opts.cache, {encoding: "utf8"}));
+		for (const fn of Object.keys(originalCache)) {
+			originalCache[fn].ids = new Set(originalCache[fn].ids);
+		}
+	} catch (err) {
+		console.warn(`WARNING: can not parse ${opts.cache}, empty cache will be used`);
 	}
-} catch (err) {
-	// ignore
 }
 const cache = {};
 
@@ -100,6 +109,24 @@ const transform = (fn, data, callback) => {
 	const positions = [];
 	traverse(ast, {
 		JSXOpeningElement(p) {
+			const elementName = p.node.name && p.node.name.name;
+			if (opts.includeElements.size && !opts.includeElements.has(elementName)) {
+				return;
+			}
+			if (opts.excludeElements.has(elementName)) {
+				return;
+			}
+			if (
+				opts.expectedAttributes.size
+				&& (
+					!p.node.attributes
+					|| !p.node.attributes.find(
+						node => node.name && opts.expectedAttributes.has(node.name.name)
+					)
+				)
+			) {
+				return;
+			}
 			const attribute = p.node.attributes && p.node.attributes.find(
 				node => node.name && node.name.name === opts.idName
 			);
@@ -185,7 +212,7 @@ class JobCounter {
 
 const transformJobCounter = new JobCounter(() => {
 	const err = duplicates.size && !opts.allowDuplicates;
-	if (!err && !opts.disableModification) {
+	if (!err && !opts.disableModification && !opts.disableCache) {
 		for (const fn of Object.keys(cache)) {
 			cache[fn].ids = [...cache[fn].ids];
 		}
