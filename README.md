@@ -85,18 +85,25 @@ Additional options:
 * indentation - tab or number of spaces, default - tab
 * quotes - double or single, default - double
 * cache - .jsx-add-data-test-id-cache.json
+* disable-cache - disable cache
 * allow-duplicates - allow duplicate attribute values
 * disable-modification - prohibit file modification
 * disable-insertion - prohibit attribute insertion (only empty attributes will be updated)
 * id-generator - nanoid or uuid4, default - nanoid
-* include-elements - only specified elements will be processed instead of all
 * exclude-elements - exclude specified elements from processing, default - Fragment
+* include-elements - only specified elements will be processed instead of all
 * expected-attributes - only elements with specified attributes will be processed instead of all (for example, you can specify onChange and onClick)
-* disable-cache - disable cache
+* always-update-empty-attributes - include-elements and expected-attributes options have no effect for empty attributes
 
 Pipeline:
 * user writes code
+* user executes jsx-add-data-test-id
+* user clears duplicates if required and executes jsx-add-data-test-id again
+* user makes commit
+
+Alternative pipeline:
+* user writes code
 * user executes jsx-add-data-test-id with disable-modification option
-* user performs duplicate cleanup if required
+* user clears duplicates if required and executes jsx-add-data-test-id again
 * user makes commit
 * CI tool executes jsx-add-data-test-id without disable-modification option and makes commit

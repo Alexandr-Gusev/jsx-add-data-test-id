@@ -18,22 +18,23 @@ commander
 	.option("--indentation <value>", undefined, "tab")
 	.option("--quotes <value>", undefined, "double")
 	.option("--cache <value>", undefined, ".jsx-add-data-test-id-cache.json")
+	.option("--disable-cache")
 	.option("--allow-duplicates")
 	.option("--disable-modification")
 	.option("--disable-insertion")
 	.option("--id-generator <value>", undefined, "nanoid")
-	.option("--include-elements <value...>", undefined, [])
 	.option("--exclude-elements <value...>", undefined, ["Fragment"])
+	.option("--include-elements <value...>", undefined, [])
 	.option("--expected-attributes <value...>", undefined, [])
-	.option("--disable-cache")
+	.option("--always-update-empty-attributes")
 	.parse();
 const opts = commander.opts();
 opts.excludeDirs = new Set(opts.excludeDirs.map(dir => dir.replace(/\\/g, "/")));
 opts.extensions = new Set(opts.extensions.map(e => `.${e}`));
 opts.indentation = opts.indentation === "tab" ? "\t" : " ".repeat(opts.indentation);
 opts.quotes = opts.quotes === "double" ? "\"" : "'";
-opts.includeElements = new Set(opts.includeElements);
 opts.excludeElements = new Set(opts.excludeElements);
+opts.includeElements = new Set(opts.includeElements);
 opts.expectedAttributes = new Set(opts.expectedAttributes);
 
 let originalCache = {};
@@ -110,23 +111,22 @@ const transform = (fn, data, callback) => {
 	traverse(ast, {
 		JSXOpeningElement(p) {
 			const elementName = p.node.name && p.node.name.name;
-			if (opts.includeElements.size && !opts.includeElements.has(elementName)) {
-				return;
-			}
 			if (opts.excludeElements.has(elementName)) {
+				callback();
 				return;
 			}
-			if (
-				opts.expectedAttributes.size
+			const wanted = (
+				(!opts.includeElements.size || opts.includeElements.has(elementName))
 				&& (
-					!p.node.attributes
-					|| !p.node.attributes.find(
-						node => node.name && opts.expectedAttributes.has(node.name.name)
+					!opts.expectedAttributes.size
+					|| (
+						p.node.attributes
+						&& p.node.attributes.find(
+							node => node.name && opts.expectedAttributes.has(node.name.name)
+						)
 					)
 				)
-			) {
-				return;
-			}
+			);
 			const attribute = p.node.attributes && p.node.attributes.find(
 				node => node.name && node.name.name === opts.idName
 			);
@@ -136,12 +136,14 @@ const transform = (fn, data, callback) => {
 					duplicates.add(value);
 				}
 				if (value === "") {
-					positions.push(attribute.value);
+					if (wanted || opts.alwaysUpdateEmptyAttributes) {
+						positions.push(attribute.value);
+					}
 				} else {
 					ids.add(value);
 					cacheForFile.ids.add(value);
 				}
-			} else if (!opts.disableInsertion) {
+			} else if (wanted && !opts.disableInsertion) {
 				positions.push(p.node);
 			}
 		}
