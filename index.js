@@ -112,7 +112,6 @@ const transform = (fn, data, callback) => {
 		JSXOpeningElement(p) {
 			const elementName = p.node.name && p.node.name.name;
 			if (opts.excludeElements.has(elementName)) {
-				callback();
 				return;
 			}
 			const wanted = (
