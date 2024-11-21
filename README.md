@@ -90,10 +90,10 @@ Additional options:
 * disable-modification - prohibit file modification
 * disable-insertion - prohibit attribute insertion (only empty attributes will be updated)
 * id-generator - nanoid or uuid4, default - nanoid
-* exclude-elements - exclude specified elements from processing, default - Fragment
 * include-elements - only specified elements will be processed instead of all
+* exclude-elements - exclude specified elements from processing, default - Fragment
 * expected-attributes - only elements with specified attributes will be processed instead of all (for example, you can specify onChange and onClick)
-* always-update-empty-attributes - include-elements and expected-attributes options have no effect for empty attributes
+* always-update-empty-attributes - include-elements, exclude-elements, and expected-attributes options will have no effect on empty attributes
 
 Pipeline:
 * user writes code

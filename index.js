@@ -23,8 +23,8 @@ commander
 	.option("--disable-modification")
 	.option("--disable-insertion")
 	.option("--id-generator <value>", undefined, "nanoid")
-	.option("--exclude-elements <value...>", undefined, ["Fragment"])
 	.option("--include-elements <value...>", undefined, [])
+	.option("--exclude-elements <value...>", undefined, ["Fragment"])
 	.option("--expected-attributes <value...>", undefined, [])
 	.option("--always-update-empty-attributes")
 	.parse();
@@ -33,8 +33,8 @@ opts.excludeDirs = new Set(opts.excludeDirs.map(dir => dir.replace(/\\/g, "/")))
 opts.extensions = new Set(opts.extensions.map(e => `.${e}`));
 opts.indentation = opts.indentation === "tab" ? "\t" : " ".repeat(opts.indentation);
 opts.quotes = opts.quotes === "double" ? "\"" : "'";
-opts.excludeElements = new Set(opts.excludeElements);
 opts.includeElements = new Set(opts.includeElements);
+opts.excludeElements = new Set(opts.excludeElements);
 opts.expectedAttributes = new Set(opts.expectedAttributes);
 
 let originalCache = {};
@@ -111,11 +111,9 @@ const transform = (fn, data, callback) => {
 	traverse(ast, {
 		JSXOpeningElement(p) {
 			const elementName = p.node.name && p.node.name.name;
-			if (opts.excludeElements.has(elementName)) {
-				return;
-			}
 			const wanted = (
 				(!opts.includeElements.size || opts.includeElements.has(elementName))
+				&& !opts.excludeElements.has(elementName)
 				&& (
 					!opts.expectedAttributes.size
 					|| (
