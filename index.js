@@ -11,24 +11,42 @@ const path = require("path");
 const {customAlphabet} = require("nanoid");
 
 commander
-	.option("-i, --include-dirs <value...>")
+	.option("-i, --include-dirs <value...>", undefined, [])
 	.option("-e, --exclude-dirs <value...>", undefined, [])
 	.option("-n, --id-name <value>", undefined, "data-testid")
 	.option("--extensions <value...>", undefined, ["js"])
 	.option("--indentation <value>", undefined, "tab")
 	.option("--quotes <value>", undefined, "double")
 	.option("--cache <value>", undefined, ".jsx-add-data-test-id-cache.json")
-	.option("--disable-cache")
-	.option("--allow-duplicates")
-	.option("--disable-modification")
-	.option("--disable-insertion")
+	.option("--disable-cache", undefined, false)
+	.option("--allow-duplicates", undefined, false)
+	.option("--disable-modification", undefined, false)
+	.option("--disable-insertion", undefined, false)
 	.option("--id-generator <value>", undefined, "nanoid")
 	.option("--include-elements <value...>", undefined, [])
 	.option("--exclude-elements <value...>", undefined, ["Fragment"])
 	.option("--expected-attributes <value...>", undefined, [])
-	.option("--always-update-empty-attributes")
+	.option("--always-update-empty-attributes", undefined, false)
+	.option("--config <value>", undefined, ".jsx-add-data-test-id-config.json")
 	.parse();
 const opts = commander.opts();
+if (fs.existsSync(opts.config)) {
+	try {
+		const config = JSON.parse(fs.readFileSync(opts.config, {encoding: "utf8"}));
+		for (const key of Object.keys(opts)) {
+			if (commander.getOptionValueSource(key) === "default" && config[key] !== undefined) {
+				opts[key] = config[key];
+			}
+		}
+	} catch (err) {
+		console.error(`ERROR: can not parse ${opts.config}`);
+		process.exit(1);
+	}
+}
+if (!opts.includeDirs.length) {
+	console.error("ERROR: no include dirs");
+	process.exit(1);
+}
 opts.excludeDirs = new Set(opts.excludeDirs.map(dir => dir.replace(/\\/g, "/")));
 opts.extensions = new Set(opts.extensions.map(e => `.${e}`));
 opts.indentation = opts.indentation === "tab" ? "\t" : " ".repeat(opts.indentation);

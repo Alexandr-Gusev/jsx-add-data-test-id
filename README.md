@@ -94,6 +94,29 @@ Additional options:
 * exclude-elements - exclude specified elements from processing, default - Fragment
 * expected-attributes - only elements with specified attributes will be processed instead of all (for example, you can specify onChange and onClick)
 * always-update-empty-attributes - include-elements, exclude-elements, and expected-attributes options will have no effect on empty attributes
+* config - .jsx-add-data-test-id-config.json
+
+Config example:
+```json
+{
+    "includeDirs": ["src/js"],
+    "excludeDirs": ["src/js/icons"],
+    "idName": "data-testid",
+    "extensions": ["js"],
+    "indentation": "tab",
+    "quotes": "double",
+    "cache": ".jsx-add-data-test-id-cache.json",
+    "disableCache": false,
+    "allowDuplicates": false,
+    "disableModification": false,
+    "disableInsertion": false,
+    "idGenerator": "nanoid",
+    "includeElements": [],
+    "excludeElements": ["Fragment"],
+    "expectedAttributes": [],
+    "alwaysUpdateEmptyAttributes": false
+}
+```
 
 Pipeline:
 * user writes code
