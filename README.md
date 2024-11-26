@@ -1,6 +1,7 @@
 # Add data-testid attribute to your JSX elements
 
 Your JSX after processing
+
 ```js
 import React, {Fragment} from "react";
 
@@ -29,6 +30,7 @@ export const A = ({a}) => {
 ```
 
 You can hide attribute values using [Inline Fold](https://marketplace.visualstudio.com/items?itemName=moalamri.inline-fold) extension for Visual Studio Code with a configuration like this
+
 ```json
 {
     "inlineFold.regex": "(data-testid=\"[0-9A-Za-z]*\")",
@@ -41,6 +43,7 @@ You can hide attribute values using [Inline Fold](https://marketplace.visualstud
 ```
 
 Your JSX in Visual Studio Code editor after hiding
+
 ```js
 import React, {Fragment} from "react";
 
@@ -76,15 +79,27 @@ npm i -D jsx-add-data-test-id
 
 ## Usage
 
+With options
+
 ```bash
-npx jsx-add-data-test-id --include-dirs src/js --exclude-dirs src/js/icons --id-name data-testid
+npx jsx-add-data-test-id -i src/js -e src/js/icons -n data-testid
 ```
 
-Additional options:
+With config file
+
+```bash
+npx jsx-add-data-test-id -c .jsx-add-data-test-id-config.json
+```
+
+Options:
+* c, config - default - .jsx-add-data-test-id-config.json
+* i, include-dirs - for example src/js
+* e, exclude-dirs - for example src/js/icons
+* n, id-name - default - data-testid
 * extensions - js
 * indentation - tab or number of spaces, default - tab
 * quotes - double or single, default - double
-* cache - .jsx-add-data-test-id-cache.json
+* cache - default - .jsx-add-data-test-id-cache.json
 * disable-cache - disable cache
 * allow-duplicates - allow duplicate attribute values
 * disable-modification - prohibit file modification
@@ -94,9 +109,9 @@ Additional options:
 * exclude-elements - exclude specified elements from processing, default - Fragment
 * expected-attributes - only elements with specified attributes will be processed instead of all (for example, you can specify onChange and onClick)
 * always-update-empty-attributes - include-elements, exclude-elements, and expected-attributes options will have no effect on empty attributes
-* config - .jsx-add-data-test-id-config.json
 
-Config example:
+JSON config file example
+
 ```json
 {
     "includeDirs": ["src/js"],
@@ -116,6 +131,29 @@ Config example:
     "expectedAttributes": [],
     "alwaysUpdateEmptyAttributes": false
 }
+```
+
+JS config file example
+
+```js
+module.exports = {
+    includeDirs: ["src/js"],
+    excludeDirs: ["src/js/icons"],
+    idName: "data-testid",
+    extensions: ["js"],
+    indentation: "tab",
+    quotes: "double",
+    cache: ".jsx-add-data-test-id-cache.json",
+    disableCache: false,
+    allowDuplicates: false,
+    disableModification: false,
+    disableInsertion: false,
+    idGenerator: "nanoid",
+    includeElements: [],
+    excludeElements: ["Fragment"],
+    expectedAttributes: [],
+    alwaysUpdateEmptyAttributes: false
+};
 ```
 
 Pipeline:

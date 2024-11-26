@@ -11,6 +11,7 @@ const path = require("path");
 const {customAlphabet} = require("nanoid");
 
 commander
+	.option("-c, --config <value>", undefined, ".jsx-add-data-test-id-config.json")
 	.option("-i, --include-dirs <value...>", undefined, [])
 	.option("-e, --exclude-dirs <value...>", undefined, [])
 	.option("-n, --id-name <value>", undefined, "data-testid")
@@ -27,21 +28,29 @@ commander
 	.option("--exclude-elements <value...>", undefined, ["Fragment"])
 	.option("--expected-attributes <value...>", undefined, [])
 	.option("--always-update-empty-attributes", undefined, false)
-	.option("--config <value>", undefined, ".jsx-add-data-test-id-config.json")
 	.parse();
 const opts = commander.opts();
 if (fs.existsSync(opts.config)) {
-	try {
-		const config = JSON.parse(fs.readFileSync(opts.config, {encoding: "utf8"}));
-		for (const key of Object.keys(opts)) {
-			if (commander.getOptionValueSource(key) === "default" && config[key] !== undefined) {
-				opts[key] = config[key];
+	const configExt = path.extname(opts.config).toLowerCase();
+	if ([".json", ".js"].includes(configExt)) {
+		try {
+			const config = configExt === ".json" ? JSON.parse(fs.readFileSync(opts.config, {encoding: "utf8"})) : require(path.resolve(__dirname, opts.config));
+			for (const key of Object.keys(config)) {
+				if (commander.getOptionValueSource(key) === "default") {
+					opts[key] = config[key];
+				}
 			}
+		} catch (err) {
+			console.error(`ERROR: can not ${configExt === ".json" ? "parse" : "import"} config file`);
+			process.exit(1);
 		}
-	} catch (err) {
-		console.error(`ERROR: can not parse ${opts.config}`);
+	} else {
+		console.error(`ERROR: unknown config file type`);
 		process.exit(1);
 	}
+} else {
+	console.error("ERROR: can not find config file");
+	process.exit(1);
 }
 if (!opts.includeDirs.length) {
 	console.error("ERROR: no include dirs");
