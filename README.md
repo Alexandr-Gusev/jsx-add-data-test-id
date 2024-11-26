@@ -94,6 +94,7 @@ npx jsx-add-data-test-id -c .jsx-add-data-test-id-config.json
 Options:
 * c, config - default - .jsx-add-data-test-id-config.json
 * i, include-dirs - for example src/js
+* f, include-files - for example test/script.js
 * e, exclude-dirs - for example src/js/icons
 * n, id-name - default - data-testid
 * extensions - js
@@ -115,6 +116,7 @@ JSON config file example
 ```json
 {
     "includeDirs": ["src/js"],
+    "includeFiles": [],
     "excludeDirs": ["src/js/icons"],
     "idName": "data-testid",
     "extensions": ["js"],
@@ -138,6 +140,7 @@ JS config file example
 ```js
 module.exports = {
     includeDirs: ["src/js"],
+    includeFiles: [],
     excludeDirs: ["src/js/icons"],
     idName: "data-testid",
     extensions: ["js"],

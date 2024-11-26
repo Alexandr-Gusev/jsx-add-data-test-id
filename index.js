@@ -13,6 +13,7 @@ const {customAlphabet} = require("nanoid");
 commander
 	.option("-c, --config <value>", undefined, ".jsx-add-data-test-id-config.json")
 	.option("-i, --include-dirs <value...>", undefined, [])
+	.option("-f, --include-files <value...>", undefined, [])
 	.option("-e, --exclude-dirs <value...>", undefined, [])
 	.option("-n, --id-name <value>", undefined, "data-testid")
 	.option("--extensions <value...>", undefined, ["js"])
@@ -48,12 +49,12 @@ if (fs.existsSync(opts.config)) {
 		console.error(`ERROR: unknown config file type`);
 		process.exit(1);
 	}
-} else {
+} else if (commander.getOptionValueSource("config") !== "default") {
 	console.error("ERROR: can not find config file");
 	process.exit(1);
 }
-if (!opts.includeDirs.length) {
-	console.error("ERROR: no include dirs");
+if (!opts.includeDirs.length && !opts.includeFiles.length) {
+	console.error("ERROR: no include dirs/files");
 	process.exit(1);
 }
 opts.excludeDirs = new Set(opts.excludeDirs.map(dir => dir.replace(/\\/g, "/")));
@@ -328,4 +329,26 @@ const collectChangedFiles = dir => {
 
 for (const dir of opts.includeDirs) {
 	collectChangedFiles(dir);
+}
+
+for (const fn of opts.includeFiles) {
+	collectJobCounter.inc();
+	fs.stat(fn, (err, stats) => {
+		if (err) {
+			console.error(`ERROR: can not get stat for ${fn}`);
+			process.exit(1);
+		}
+		let info = originalCache[fn];
+		const t = stats.mtime.getTime();
+		if (!info || info.mt !== t) {
+			info = {
+				ids: new Set()
+			};
+			changedFiles.push(fn);
+		} else {
+			unchangedFiles.push(fn);
+		}
+		cache[fn] = info;
+		collectJobCounter.dec();
+	});
 }
